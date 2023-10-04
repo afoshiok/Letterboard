@@ -24,21 +24,6 @@ def film_details(id):
     response = requests.get(req_link, headers=head)
     return response.json()
 
-def process_film(film):
-    film_id = film.find("td", {"class": "td-film-details"}).div["data-film-id"]
-    film_slug = film.find("td", {"class": "td-film-details"}).div["data-film-slug"]
-    tmdb_id = get_tmdb_id(film_slug)
-
-    film_name = film.find("h3", {"class": "headline-3 prettify"}).text
-    release_year = film_details(tmdb_id)["release_date"]
-
-    return {
-        "Film Name": film_name,
-        "LetterID": film_id,
-        "TMDb ID": tmdb_id,
-        "Release Year": release_year
-    }
-
 def crawl(username):
     link = f"https://letterboxd.com/{username}/films/diary/"
     page = requests.get(link)
