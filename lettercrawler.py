@@ -4,6 +4,7 @@ import pandas as pd
 import os
 from dotenv import load_dotenv
 import time
+import asyncio
 
 load_dotenv()
 
@@ -28,31 +29,19 @@ def crawl(username):
     link = f"https://letterboxd.com/{username}/films/diary/"
     page = requests.get(link)
     soup = BeautifulSoup(page.content, 'html.parser').tbody #Wraps the http request in BS4
-    data = {
-        "Film Name" : [],
-        "LetterID": [],
-        "TMDb ID": [],
-        # "Film Slug": [],
-        "Release Year": []
-    }
+
+    film_slugs = []
+
     for i in soup.find_all("tr"):
-        film_id = i.find("td", {"class": "td-film-details"}).div["data-film-id"]
         film_slug = i.find("td", {"class": "td-film-details"}).div["data-film-slug"]
-        tmdb_id = get_tmdb_id(film_slug)
+        film_slugs.append(get_tmdb_id(film_slug))
 
-        data["Film Name"].append(i.find("h3", {"class": "headline-3 prettify"}).text)
-        data["LetterID"].append(film_id)
-        data["TMDb ID"].append(tmdb_id)
-        data["Release Year"].append(film_details(tmdb_id)["release_date"])
-
-    film_df = pd.DataFrame(data)
-    
-    print(film_df)
-    
+    print(film_slugs)
 
 
 
 if __name__ == "__main__":
     start_time = time.time()
     crawl('FavourOshio')
+    # print(film_details(27256))
     print("--- %s seconds ---" % (time.time() - start_time)) #task runtime
