@@ -5,6 +5,7 @@ import os
 from dotenv import load_dotenv
 import time
 import asyncio
+import aiohttp
 
 load_dotenv()
 
@@ -28,11 +29,12 @@ def film_details(id):
 def crawl(username):
     link = f"https://letterboxd.com/{username}/films/diary/"
     page = requests.get(link)
-    soup = BeautifulSoup(page.content, 'html.parser').tbody #Wraps the http request in BS4
+    soup = BeautifulSoup(page.content, 'lxml') #Wraps the http request in BS4
+    pages = soup.find("div", {"class": "paginate-pages"}).ul
 
     film_slugs = []
 
-    for i in soup.find_all("tr"):
+    for i in soup.tbody.find_all("tr"):
         film_slug = i.find("td", {"class": "td-film-details"}).div["data-film-slug"]
         film_slugs.append(get_tmdb_id(film_slug))
 
