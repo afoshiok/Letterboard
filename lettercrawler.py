@@ -12,7 +12,7 @@ load_dotenv()
 
 async def fetch_tmdb_id(session, slug):
     async with session.get(f"https://letterboxd.com/film/{slug}/details") as response:
-        film = BeautifulSoup(await response.text(), 'html.parser')
+        film = BeautifulSoup(await response.text(), 'lxml')
         film_id = film.body["data-tmdb-id"]
         return film_id
     # film_page = requests.get(f"https://letterboxd.com/film/{slug}/details")
@@ -61,23 +61,30 @@ async def crawl(username):
                 film_rating = int(parse_rating.find('input').get('value'))
                 film_log_date = parse_log_date.find('a').get('href').split('/')[5:8]
                 film_ob = {
-                    "Film Rating": film_rating,
-                    "TMDb Rating": tmdb_id,
+                    "Name": tmdb_data["title"],
+                    "Letterboxd Rating": film_rating,
+                    "TMDb ID": tmdb_id,
                     "Log Date": f"{film_log_date[1]}-{film_log_date[2]}-{film_log_date[0]}",
+                    "Release Date": tmdb_data["release_date"],
                     "Adult": tmdb_data["adult"],
-                    "Budget": tmdb_data["budget"]
+                    "Budget": tmdb_data["budget"],
+                    "Production Countries":[country.get("iso_3166_1") for country in tmdb_data["production_countries"] ],
+                    "Genre(s)": [genre.get("name") for genre in tmdb_data["genres"]],
+                    "Runtime (Minutes)": tmdb_data["runtime"]
                 }
                 film_slugs.append(film_ob)
                 # break #For testing!
         
-
-    print(film_slugs)
+    film_df = pd.DataFrame.from_records(film_slugs)
+    return film_df
     # print(tmdb_data)
 
 
 
 if __name__ == "__main__":
     start_time = time.time()
-    asyncio.run(crawl('FavourOshio'))
+    loop = asyncio.get_event_loop()
+    final_df = loop.run_until_complete(crawl('FavourOshio'))
+    print(final_df)
     # print(film_details(27256))
     print("--- %s seconds ---" % (time.time() - start_time)) #task runtime
