@@ -37,6 +37,10 @@ def crawl(username):
     for i in soup.tbody.find_all("tr"):
         film_slug = i.find("td", {"class": "td-film-details"}).div["data-film-slug"]
 
+        tmdb_data = film_details(
+                get_tmdb_id(film_slug)
+            )
+
         parse_rating = i.find("td", {"class": "td-rating rating-green"})
         parse_log_date = i.find("td", {"class": "td-day diary-day center"})
 
@@ -45,13 +49,16 @@ def crawl(username):
         film_ob = {
             "Film Rating": film_rating,
             "TMDb Rating": get_tmdb_id(film_slug),
-            "Log Date": f"{film_log_date[1]}-{film_log_date[2]}-{film_log_date[0]}"
+            "Log Date": f"{film_log_date[1]}-{film_log_date[2]}-{film_log_date[0]}",
+            "Adult": tmdb_data["adult"],
+            "Budget": tmdb_data["budget"]
         }
         film_slugs.append(film_ob)
-        break #For testing!
+        # break #For testing!
         
 
     print(film_slugs)
+    # print(tmdb_data)
 
 
 
