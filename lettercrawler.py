@@ -66,7 +66,6 @@ async def crawl(username):
                     "TMDb ID": tmdb_id,
                     "Log Date": f"{film_log_date[1]}-{film_log_date[2]}-{film_log_date[0]}",
                     "Release Date": tmdb_data["release_date"],
-                    "Adult": tmdb_data["adult"],
                     "Budget": tmdb_data["budget"],
                     "Production Countries":[country.get("iso_3166_1") for country in tmdb_data["production_countries"] ],
                     "Genre(s)": [genre.get("name") for genre in tmdb_data["genres"]],
