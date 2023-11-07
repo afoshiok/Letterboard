@@ -15,10 +15,7 @@ async def fetch_tmdb_id(session, slug):
         film = BeautifulSoup(await response.text(), 'lxml')
         film_id = film.body["data-tmdb-id"]
         return film_id
-    # film_page = requests.get(f"https://letterboxd.com/film/{slug}/details")
-    # film = BeautifulSoup(film_page.content, 'html.parser')
-    # film_id = film.body["data-tmdb-id"]
-    # return film_id
+
 
 async def fetch_film_details(session, id):
     req_link = f"https://api.themoviedb.org/3/movie/{id}"
@@ -30,8 +27,7 @@ async def fetch_film_details(session, id):
     async with session.get(req_link, headers=head) as response:
         return await response.json()
     
-    # response = requests.get(req_link, headers=head)
-    # return response.json()
+
 
 async def crawl(username):
     async with aiohttp.ClientSession() as session:
@@ -39,9 +35,6 @@ async def crawl(username):
         async with session.get(link) as response:
             soup = BeautifulSoup(await response.text(), 'lxml') #Wraps the http request in BS4
             pages = soup.find("div", {"class": "paginate-pages"}).ul
-    # page = requests.get(link)
-    # soup = BeautifulSoup(page.content, 'lxml') #Wraps the http request in BS4
-    # pages = soup.find("div", {"class": "paginate-pages"}).ul
 
             film_slugs = []
 
@@ -50,10 +43,6 @@ async def crawl(username):
 
                 tmdb_id = await fetch_tmdb_id(session, film_slug)
                 tmdb_data = await fetch_film_details(session, tmdb_id)
-
-                # tmdb_data = film_details(
-                #         get_tmdb_id(film_slug)
-                #     )
 
                 parse_rating = i.find("td", {"class": "td-rating rating-green"})
                 parse_log_date = i.find("td", {"class": "td-day diary-day center"})
@@ -76,7 +65,7 @@ async def crawl(username):
         
     film_df = pd.DataFrame.from_records(film_slugs)
     return film_df
-    # print(tmdb_data)
+
 
 
 
