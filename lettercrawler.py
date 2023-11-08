@@ -73,6 +73,7 @@ if __name__ == "__main__":
     start_time = time.time()
     loop = asyncio.get_event_loop()
     final_df = loop.run_until_complete(crawl('FavourOshio'))
+    pd.set_option('display.max_columns', None)
     print(final_df)
     # print(film_details(27256))
     print("--- %s seconds ---" % (time.time() - start_time)) #task runtime
