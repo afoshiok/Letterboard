@@ -29,14 +29,13 @@ async def fetch_film_details(session, id):
     
 
 
-async def crawl(username):
+async def crawl(username): #Creates dataframe for data analysis
+    user_films = []
+
     async with aiohttp.ClientSession() as session:
         link = f"https://letterboxd.com/{username}/films/diary/"
         async with session.get(link) as response:
             soup = BeautifulSoup(await response.text(), 'lxml') #Wraps the http request in BS4
-            pages = soup.find("div", {"class": "paginate-pages"}).ul
-
-            film_slugs = []
 
             for i in soup.tbody.find_all("tr"):
                 film_slug = i.find("td", {"class": "td-film-details"}).div["data-film-slug"]
@@ -60,12 +59,11 @@ async def crawl(username):
                     "Genre(s)": [genre.get("name") for genre in tmdb_data["genres"]],
                     "Runtime (Minutes)": tmdb_data["runtime"]
                 }
-                film_slugs.append(film_ob)
-                # break #For testing!
-        
-    film_df = pd.DataFrame.from_records(film_slugs)
-    return film_df
-
+                user_films.append(film_ob)
+                    # break #For testing!
+    
+            film_df = pd.DataFrame.from_records(user_films)
+            return film_df
 
 
 
@@ -73,7 +71,6 @@ if __name__ == "__main__":
     start_time = time.time()
     loop = asyncio.get_event_loop()
     final_df = loop.run_until_complete(crawl('FavourOshio'))
-    pd.set_option('display.max_columns', None)
     print(final_df)
     # print(film_details(27256))
     print("--- %s seconds ---" % (time.time() - start_time)) #task runtime
