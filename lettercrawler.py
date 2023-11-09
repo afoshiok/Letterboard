@@ -65,13 +65,26 @@ async def crawl(username,page): #Creates dataframe for data analysis
         
                 film_df = pd.DataFrame.from_records(user_films)
                 return film_df
+        
+async def crawl_all(user):
+    tasks = [] 
+    response = requests.get("https://letterboxd.com/FavourOshio/films/diary/")
+    soup = BeautifulSoup(await response.text(), 'lxml')
+    count_pages = soup.find("div", {"class": "paginate-pages"}).ul.find_all('li')
+    total_pages = int(count_pages[-1].get_text())
+    
+    for i in range(1, total_pages + 1):
+        tasks.append(crawl(user, i))
+    
+    print(tasks)
 
 
 
 if __name__ == "__main__":
     start_time = time.time()
-    loop = asyncio.get_event_loop()
-    final_df = loop.run_until_complete(crawl('Favourshio',2))
-    print(final_df)
+    # loop = asyncio.get_event_loop()
+    # final_df = loop.run_until_complete(crawl('Favourshio',2))
+    # print(final_df)
+    asyncio.run(crawl_all("FavourOshio"))
     # print(film_details(27256))
     print("--- %s seconds ---" % (time.time() - start_time)) #task runtime
