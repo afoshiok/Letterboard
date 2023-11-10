@@ -50,41 +50,29 @@ async def crawl(username,page): #Creates dataframe for data analysis
                     film_rating = int(parse_rating.find('input').get('value'))
                     film_log_date = parse_log_date.find('a').get('href').split('/')[5:8]
                     film_ob = {
-                        "Name": tmdb_data["title"],
+                        "Name": tmdb_data.get("title", ""),
                         "Letterboxd Rating": film_rating,
                         "TMDb ID": tmdb_id,
                         "Log Date": f"{film_log_date[1]}-{film_log_date[2]}-{film_log_date[0]}",
-                        "Release Date": tmdb_data["release_date"],
-                        "Budget": tmdb_data["budget"],
-                        "Production Countries":[country.get("iso_3166_1") for country in tmdb_data["production_countries"] ],
-                        "Genre(s)": [genre.get("name") for genre in tmdb_data["genres"]],
-                        "Runtime (Minutes)": tmdb_data["runtime"]
+                        "Release Date": tmdb_data.get("release_date", ""),
+                        "Budget": tmdb_data.get("budget", ""),
+                        "Production Countries":[country.get("iso_3166_1") for country in tmdb_data.get("production_countries", []) ],
+                        "Genre(s)": [genre.get("name") for genre in tmdb_data.get("genres", [])],
+                        "Runtime (Minutes)": tmdb_data.get("runtime", "")
                     }
                     user_films.append(film_ob)
                         # break #For testing!
         
                 film_df = pd.DataFrame.from_records(user_films)
                 return film_df
+            else:
+                print(f"Error: Failed to fetch data from {link}. Status code: {response.status}")
+                return pd.DataFrame()  # Return an empty dataframe in case of an error
         
-async def crawl_all(user):
-    tasks = [] 
-    response = requests.get("https://letterboxd.com/FavourOshio/films/diary/")
-    soup = BeautifulSoup(await response.text(), 'lxml')
-    count_pages = soup.find("div", {"class": "paginate-pages"}).ul.find_all('li')
-    total_pages = int(count_pages[-1].get_text())
-    
-    for i in range(1, total_pages + 1):
-        tasks.append(crawl(user, i))
-    
-    print(tasks)
-
-
-
 if __name__ == "__main__":
     start_time = time.time()
-    # loop = asyncio.get_event_loop()
-    # final_df = loop.run_until_complete(crawl('Favourshio',2))
-    # print(final_df)
-    asyncio.run(crawl_all("FavourOshio"))
+    loop = asyncio.get_event_loop()
+    final_df = loop.run_until_complete(crawl('FavourOshio',1))
+    print(final_df)
     # print(film_details(27256))
     print("--- %s seconds ---" % (time.time() - start_time)) #task runtime
