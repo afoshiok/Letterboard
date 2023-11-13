@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
-import pandas as pd
+import polars as pl
 import os
 from dotenv import load_dotenv
 import time
@@ -63,11 +63,11 @@ async def crawl(username,page): #Creates dataframe for data analysis
                     user_films.append(film_ob)
                         # break #For testing!
         
-                film_df = pd.DataFrame.from_records(user_films)
+                film_df = pl.DataFrame._from_dicts(user_films)
                 return film_df
             else:
                 print(f"Error: Failed to fetch data from {link}. Status code: {response.status}")
-                return pd.DataFrame()  # Return an empty dataframe in case of an error
+                return pl.DataFrame()  # Return an empty dataframe in case of an error
         
 if __name__ == "__main__":
     start_time = time.time()
