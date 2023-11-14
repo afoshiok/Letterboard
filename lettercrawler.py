@@ -126,13 +126,10 @@ if __name__ == "__main__":
     start_time = time.time()
     # loop = asyncio.get_event_loop()
     # final_df = loop.run_until_complete(crawl('FavourOshio'))
-    pl.Config.set_tbl_rows(500)
-    # print(final_df)
-    final_df = crawl_all("FavourOshio", get_total_pages("FavourOshio"))
+    pl.Config.set_tbl_rows(25)
+    user = "fumilayo"
+    final_df = crawl_all(user, get_total_pages(user))
+    print(final_df)
     print(len(final_df))
-    null_data = final_df.filter(
-        pl.col("Directors").apply(lambda x: len(x) == 0)
-    )
-    print(null_data)
     print(get_total_pages("FavourOshio"))
     print("--- %s seconds ---" % (time.time() - start_time)) #task runtime
