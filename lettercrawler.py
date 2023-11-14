@@ -62,7 +62,7 @@ def get_total_pages(username):
         return None
 
 
-async def crawl(username, page): #Creates dataframe for data analysis
+async def crawl(username, page, session): #Creates dataframe for data analysis
     user_films = []
 
     async with aiohttp.ClientSession() as session:
@@ -118,20 +118,22 @@ async def crawl(username, page): #Creates dataframe for data analysis
                 #     print(f"Error: Failed to fetch data from {link}. Status code: {response.status}")
                 #     return pl.DataFrame()  # Return an empty dataframe in case of an error
 
-def crawl_all(username):
+async def crawl_all(username):
     final_df = pl.DataFrame()
     pages = get_total_pages(username)
-    if pages == None:
+    if pages is None:
         return final_df
-    elif pages > 1:
-        loop = asyncio.get_event_loop()
-        tasks = [crawl(username, i) for i in range(1, pages + 1)]
-        result = loop.run_until_complete(asyncio.gather(*tasks))
-        for df in result:
+    
+    if pages == 1:
+        async with aiohttp.ClientSession() as session:
+            df = await crawl(username, pages, session)
             final_df = final_df.vstack(df)
-    loop = asyncio.get_event_loop()
-    df = loop.run_until_complete(crawl(username,pages))
-    final_df = final_df.vstack(df)
+
+    async with aiohttp.ClientSession() as session:
+        for i in range(1, pages + 1):
+            df = await crawl(username, i, session)
+            final_df = final_df.vstack(df)
+
     return final_df
     
 
@@ -143,7 +145,8 @@ if __name__ == "__main__":
     # final_df = loop.run_until_complete(crawl('FavourOshio'))
     pl.Config.set_tbl_rows(25)
     user = "FavourOshio"
-    final_df = crawl_all(user)
+    loop = asyncio.get_event_loop()
+    final_df = loop.run_until_complete(crawl_all(user))
     print(final_df)
     print(len(final_df))
     # print(get_total_pages(user))
