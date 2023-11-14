@@ -56,7 +56,7 @@ def get_total_pages(username):
                 return None
         else:
             print("No paginate-pages class found")
-            return None
+            return 1 #User has less than 50 films logged
     except Exception as e:
         print(f"Error parsing HTML: {e}")
         return None
@@ -112,11 +112,15 @@ async def crawl(username, page): #Creates dataframe for data analysis
 
 def crawl_all(username, pages):
     final_df = pl.DataFrame()
+    if pages > 1:
+        loop = asyncio.get_event_loop()
+        tasks = [crawl(username, i) for i in range(1, pages + 1)]
+        result = loop.run_until_complete(asyncio.gather(*tasks))
+        for df in result:
+            final_df = final_df.vstack(df)
     loop = asyncio.get_event_loop()
-    tasks = [crawl(username, i) for i in range(1, pages + 1)]
-    result = loop.run_until_complete(asyncio.gather(*tasks))
-    for df in result:
-        final_df = final_df.vstack(df)
+    df = loop.run_until_complete(crawl(username,pages))
+    final_df = final_df.vstack(df)
     return final_df
     
 
@@ -127,9 +131,9 @@ if __name__ == "__main__":
     # loop = asyncio.get_event_loop()
     # final_df = loop.run_until_complete(crawl('FavourOshio'))
     pl.Config.set_tbl_rows(25)
-    user = "fumilayo"
+    user = "kcabs"
     final_df = crawl_all(user, get_total_pages(user))
     print(final_df)
     print(len(final_df))
-    print(get_total_pages("FavourOshio"))
+    print(get_total_pages(user))
     print("--- %s seconds ---" % (time.time() - start_time)) #task runtime
