@@ -29,7 +29,7 @@ async def fetch_film_details(session, id):
     async with session.get(crew_request_link, headers=head) as crew_response:
         crew_data = await crew_response.json()
     
-    return film_data,crew_data["crew"]
+    return film_data,crew_data
     
 def get_total_pages(username):
     link = f"https://letterboxd.com/{username}/films/diary/"
@@ -62,47 +62,47 @@ def get_total_pages(username):
         return None
 
 
-async def crawl(username): #Creates dataframe for data analysis
+async def crawl(username, page): #Creates dataframe for data analysis
     user_films = []
 
     async with aiohttp.ClientSession() as session:
-            link = f"https://letterboxd.com/{username}/films/diary/"
-            async with session.get(link) as response:
-                if response.status == 200:
-                    soup = BeautifulSoup(await response.text(), 'lxml') #Wraps the http request in BS4
+        link = f"https://letterboxd.com/{username}/films/diary/page/{page}"
+        async with session.get(link) as response:
+            if response.status == 200:
+                soup = BeautifulSoup(await response.text(), 'lxml') #Wraps the http request in BS4
 
-                    for i in soup.tbody.find_all("tr"):
-                        film_slug = i.find("td", {"class": "td-film-details"}).div["data-film-slug"]
+                for i in soup.tbody.find_all("tr"):
+                    film_slug = i.find("td", {"class": "td-film-details"}).div["data-film-slug"]
 
-                        tmdb_id = await fetch_tmdb_id(session, film_slug)
-                        film_tmdb_data, crew_tmdb_data = await fetch_film_details(session, tmdb_id)
+                    tmdb_id = await fetch_tmdb_id(session, film_slug)
+                    film_tmdb_data, crew_tmdb_data = await fetch_film_details(session, tmdb_id)
 
-                        parse_rating = i.find("td", {"class": "td-rating rating-green"})
-                        parse_log_date = i.find("td", {"class": "td-day diary-day center"})
+                    parse_rating = i.find("td", {"class": "td-rating rating-green"})
+                    parse_log_date = i.find("td", {"class": "td-day diary-day center"})
 
-                        film_rating = int(parse_rating.find('input').get('value'))
-                        film_log_date = parse_log_date.find('a').get('href').split('/')[5:8]
-                        directors = []
-                        director_gender = [] #Index corresponds to directors index.
-                        for crew_member in crew_tmdb_data:
-                            if crew_member['job'] == 'Director':
-                                directors.append(crew_member['name'])
-                                director_gender.append(crew_member['gender'])
-                        film_ob = {
-                            "Name": film_tmdb_data.get("title", ""),
-                            "Letterboxd Rating": film_rating / 2,
-                            "TMDb ID": tmdb_id,
-                            "Log Date": f"{film_log_date[1]}-{film_log_date[2]}-{film_log_date[0]}",
-                            "Release Date": film_tmdb_data.get("release_date", ""),
-                            "Budget": film_tmdb_data.get("budget", ""),
-                            "Production Countries":[country.get("iso_3166_1") for country in film_tmdb_data.get("production_countries", []) ],
-                            "Genre(s)": [genre.get("name") for genre in film_tmdb_data.get("genres", [])],
-                            "Runtime (Minutes)": film_tmdb_data.get("runtime", ""),
-                            "Directors": directors,
-                            "Director Gender": director_gender #List of 0s, 1s and 2s; 0 and 1 = Woman, 2 = Man
-                        }
-                        user_films.append(film_ob)
-                    await asyncio.sleep(1)
+                    film_rating = int(parse_rating.find('input').get('value'))
+                    film_log_date = parse_log_date.find('a').get('href').split('/')[5:8]
+                    directors = []
+                    director_gender = [] #Index corresponds to directors index.
+                    for crew_member in crew_tmdb_data.get("crew", []):
+                        if crew_member['job'] == 'Director':
+                            directors.append(crew_member['name'])
+                            director_gender.append(crew_member['gender'])
+                    film_ob = {
+                        "Name": film_tmdb_data.get("title", ""),
+                        "Letterboxd Rating": film_rating / 2,
+                        "TMDb ID": tmdb_id,
+                        "Log Date": f"{film_log_date[1]}-{film_log_date[2]}-{film_log_date[0]}",
+                        "Release Date": film_tmdb_data.get("release_date", ""),
+                        "Budget": film_tmdb_data.get("budget", 0),
+                        "Production Countries":[country.get("iso_3166_1") for country in film_tmdb_data.get("production_countries", []) ],
+                        "Genre(s)": [genre.get("name") for genre in film_tmdb_data.get("genres", [])],
+                        "Runtime (Minutes)": film_tmdb_data.get("runtime", 0),
+                        "Directors": directors,
+                        "Director Gender": director_gender #List of 0s, 1s and 2s; 0 and 1 = Woman, 2 = Man
+                    }
+                    user_films.append(film_ob)
+                await asyncio.sleep(1)
             
             film_df = pl.DataFrame._from_dicts(user_films)
             return film_df
@@ -110,12 +110,29 @@ async def crawl(username): #Creates dataframe for data analysis
                 #     print(f"Error: Failed to fetch data from {link}. Status code: {response.status}")
                 #     return pl.DataFrame()  # Return an empty dataframe in case of an error
 
+def crawl_all(username, pages):
+    final_df = pl.DataFrame()
+    loop = asyncio.get_event_loop()
+    tasks = [crawl(username, i) for i in range(1, pages + 1)]
+    result = loop.run_until_complete(asyncio.gather(*tasks))
+    for df in result:
+        final_df = final_df.vstack(df)
+    return final_df
+    
+
+
         
 if __name__ == "__main__":
     start_time = time.time()
-    loop = asyncio.get_event_loop()
-    final_df = loop.run_until_complete(crawl('FavourOshio'))
+    # loop = asyncio.get_event_loop()
+    # final_df = loop.run_until_complete(crawl('FavourOshio'))
     pl.Config.set_tbl_rows(500)
-    print(final_df)
+    # print(final_df)
+    final_df = crawl_all("FavourOshio", get_total_pages("FavourOshio"))
+    print(len(final_df))
+    null_data = final_df.filter(
+        pl.col("Directors").apply(lambda x: len(x) == 0)
+    )
+    print(null_data)
     print(get_total_pages("FavourOshio"))
     print("--- %s seconds ---" % (time.time() - start_time)) #task runtime
