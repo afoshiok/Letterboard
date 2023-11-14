@@ -118,8 +118,9 @@ async def crawl(username, page): #Creates dataframe for data analysis
                 #     print(f"Error: Failed to fetch data from {link}. Status code: {response.status}")
                 #     return pl.DataFrame()  # Return an empty dataframe in case of an error
 
-def crawl_all(username, pages):
+def crawl_all(username):
     final_df = pl.DataFrame()
+    pages = get_total_pages(username)
     if pages == None:
         return final_df
     elif pages > 1:
@@ -142,7 +143,7 @@ if __name__ == "__main__":
     # final_df = loop.run_until_complete(crawl('FavourOshio'))
     pl.Config.set_tbl_rows(25)
     user = "FavourOshio"
-    final_df = crawl_all(user, get_total_pages(user))
+    final_df = crawl_all(user)
     print(final_df)
     print(len(final_df))
     # print(get_total_pages(user))
