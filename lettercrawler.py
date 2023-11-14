@@ -84,10 +84,16 @@ async def crawl(username, page): #Creates dataframe for data analysis
                     film_log_date = parse_log_date.find('a').get('href').split('/')[5:8]
                     directors = []
                     director_gender = [] #Index corresponds to directors index.
+                    writers = []
+                    writer_gender = []
                     for crew_member in crew_tmdb_data.get("crew", []):
                         if crew_member['job'] == 'Director':
                             directors.append(crew_member['name'])
                             director_gender.append(crew_member['gender'])
+                    for crew_member in crew_tmdb_data.get("crew", []):
+                        if crew_member['job'] == 'Writer' or 'Screenplay':
+                            writers.append(crew_member['name'])
+                            writer_gender.append(crew_member['gender'])
                     film_ob = {
                         "Name": film_tmdb_data.get("title", ""),
                         "Letterboxd Rating": film_rating / 2,
@@ -99,7 +105,9 @@ async def crawl(username, page): #Creates dataframe for data analysis
                         "Genre(s)": [genre.get("name") for genre in film_tmdb_data.get("genres", [])],
                         "Runtime (Minutes)": film_tmdb_data.get("runtime", 0),
                         "Directors": directors,
-                        "Director Gender": director_gender #List of 0s, 1s and 2s; 0 and 1 = Woman, 2 = Man
+                        "Director Gender": director_gender, #List of 0s, 1s and 2s; 0 and 1 = Woman, 2 = Man
+                        "Writers": writers,
+                        "Writer Gender": writer_gender
                     }
                     user_films.append(film_ob)
                 await asyncio.sleep(1)
@@ -131,9 +139,9 @@ if __name__ == "__main__":
     # loop = asyncio.get_event_loop()
     # final_df = loop.run_until_complete(crawl('FavourOshio'))
     pl.Config.set_tbl_rows(25)
-    user = "kcabs"
+    user = "FavourOshio"
     final_df = crawl_all(user, get_total_pages(user))
     print(final_df)
     print(len(final_df))
-    print(get_total_pages(user))
+    # print(get_total_pages(user))
     print("--- %s seconds ---" % (time.time() - start_time)) #task runtime
