@@ -3,3 +3,4 @@ polars
 aiohttp 
 requests 
 python-dotenv
+streamlit
