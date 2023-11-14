@@ -120,7 +120,9 @@ async def crawl(username, page): #Creates dataframe for data analysis
 
 def crawl_all(username, pages):
     final_df = pl.DataFrame()
-    if pages > 1:
+    if pages == None:
+        return final_df
+    elif pages > 1:
         loop = asyncio.get_event_loop()
         tasks = [crawl(username, i) for i in range(1, pages + 1)]
         result = loop.run_until_complete(asyncio.gather(*tasks))
