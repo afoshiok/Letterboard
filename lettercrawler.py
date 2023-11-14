@@ -62,12 +62,11 @@ def get_total_pages(username):
         return None
 
 
-async def crawl(username,page): #Creates dataframe for data analysis
+async def crawl(username): #Creates dataframe for data analysis
     user_films = []
 
     async with aiohttp.ClientSession() as session:
-        for page in range(1, page + 1):
-            link = f"https://letterboxd.com/{username}/films/diary/page/{page}"
+            link = f"https://letterboxd.com/{username}/films/diary/"
             async with session.get(link) as response:
                 if response.status == 200:
                     soup = BeautifulSoup(await response.text(), 'lxml') #Wraps the http request in BS4
@@ -115,7 +114,7 @@ async def crawl(username,page): #Creates dataframe for data analysis
 if __name__ == "__main__":
     start_time = time.time()
     loop = asyncio.get_event_loop()
-    final_df = loop.run_until_complete(crawl('FavourOshio', get_total_pages("FavourOshio")))
+    final_df = loop.run_until_complete(crawl('FavourOshio'))
     pl.Config.set_tbl_rows(500)
     print(final_df)
     print(get_total_pages("FavourOshio"))
