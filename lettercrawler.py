@@ -18,14 +18,18 @@ async def fetch_tmdb_id(session, slug):
 
 
 async def fetch_film_details(session, id):
-    req_link = f"https://api.themoviedb.org/3/movie/{id}"
+    film_req_link = f"https://api.themoviedb.org/3/movie/{id}"
     head = {
         "accept": "application/json",
         "Authorization": f"Bearer {os.environ.get('api')}" 
         }
+    crew_request_link = f"https://api.themoviedb.org/3/movie/{id}/credits"
+    async with session.get(film_req_link, headers=head) as response:
+        film_data = await response.json()
+    async with session.get(crew_request_link, headers=head) as crew_response:
+        crew_data = await crew_response.json()
     
-    async with session.get(req_link, headers=head) as response:
-        return await response.json()
+    return film_data,crew_data["crew"]
     
 def get_total_pages(username):
     link = f"https://letterboxd.com/{username}/films/diary/"
@@ -72,26 +76,34 @@ async def crawl(username,page): #Creates dataframe for data analysis
                         film_slug = i.find("td", {"class": "td-film-details"}).div["data-film-slug"]
 
                         tmdb_id = await fetch_tmdb_id(session, film_slug)
-                        tmdb_data = await fetch_film_details(session, tmdb_id)
+                        film_tmdb_data, crew_tmdb_data = await fetch_film_details(session, tmdb_id)
 
                         parse_rating = i.find("td", {"class": "td-rating rating-green"})
                         parse_log_date = i.find("td", {"class": "td-day diary-day center"})
 
                         film_rating = int(parse_rating.find('input').get('value'))
                         film_log_date = parse_log_date.find('a').get('href').split('/')[5:8]
+                        directors = []
+                        director_gender = [] #Index corresponds to directors index.
+                        for crew_member in crew_tmdb_data:
+                            if crew_member['job'] == 'Director':
+                                directors.append(crew_member['name'])
+                                director_gender.append(crew_member['gender'])
                         film_ob = {
-                            "Name": tmdb_data.get("title", ""),
+                            "Name": film_tmdb_data.get("title", ""),
                             "Letterboxd Rating": film_rating / 2,
                             "TMDb ID": tmdb_id,
                             "Log Date": f"{film_log_date[1]}-{film_log_date[2]}-{film_log_date[0]}",
-                            "Release Date": tmdb_data.get("release_date", ""),
-                            "Budget": tmdb_data.get("budget", ""),
-                            "Production Countries":[country.get("iso_3166_1") for country in tmdb_data.get("production_countries", []) ],
-                            "Genre(s)": [genre.get("name") for genre in tmdb_data.get("genres", [])],
-                            "Runtime (Minutes)": tmdb_data.get("runtime", "")
+                            "Release Date": film_tmdb_data.get("release_date", ""),
+                            "Budget": film_tmdb_data.get("budget", ""),
+                            "Production Countries":[country.get("iso_3166_1") for country in film_tmdb_data.get("production_countries", []) ],
+                            "Genre(s)": [genre.get("name") for genre in film_tmdb_data.get("genres", [])],
+                            "Runtime (Minutes)": film_tmdb_data.get("runtime", ""),
+                            "Directors": directors,
+                            "Director Gender": director_gender #List of 0s, 1s and 2s; 0 and 1 = Woman, 2 = Man
                         }
                         user_films.append(film_ob)
-                await asyncio.sleep(1)
+                    await asyncio.sleep(1)
             
             film_df = pl.DataFrame._from_dicts(user_films)
             return film_df
