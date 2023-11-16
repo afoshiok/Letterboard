@@ -26,9 +26,10 @@ username = st.text_input('Username')
 submitted = st.button("Submit")
 df = None
 year_count = None
+release_count = None
 
 if submitted:
-    tab1, tab2, tab3 = st.tabs(["Films Logged", "Dog", "Owl"])
+    tab1, tab2 = st.tabs(["Films Logged", "Film Release Year"])
     df = load_user_data(username)
 
 if df is not None:
@@ -42,7 +43,22 @@ if df is not None:
             .sort("Log Year")
         )
         log_years_count = log_years_script.collect()
-        log_years_graph = px.bar(log_years_count, x="Log Year", y="Films Logged", title="Films Logged by Year")
+        log_years_graph = px.bar(log_years_count, x="Log Year", y="Films Logged", title="Films Logged by Year", )
         log_years_graph.update_xaxes(type='category')
         st.plotly_chart(log_years_graph, use_container_width=True)
+    
+    with tab2:
+        release_years = df.with_columns(pl.col("Release Date").dt.year().cast(pl.Utf8).to_physical().alias("Release Year"))
+        release_years_script = (
+        release_years.lazy()
+            .group_by("Release Year")
+            .agg(pl.count())
+            .drop_nulls()
+            .sort("Release Year")
+        )
+        re_count = release_years_script.collect()
+        re_years_graph = px.bar(re_count, x="Release Year", y="count")
+        re_years_graph.update_xaxes(type='category')
+        st.plotly_chart(re_years_graph , use_container_width=True)
+    
 
