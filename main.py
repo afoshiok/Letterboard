@@ -33,7 +33,7 @@ if submitted:
     df = load_user_data(username)
 
 if df is not None:
-    # Display your DataFrame in Streamlit
+    st.markdown(f"""### You've logged a total of {len(df)}* films on Letterboxd!""")
     with tab1:
         log_years = df.with_columns(pl.col("Log Date").dt.year().cast(pl.Utf8).to_physical().alias("Log Year"))
         log_years_script = (
