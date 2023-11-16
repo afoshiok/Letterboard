@@ -15,7 +15,7 @@ with st.form(key='username'):
     submitted = st.form_submit_button("Submit")
     if submitted:
         loop = asyncio.new_event_loop()
-        df = loop.run_until_complete(crawl_all(username,get_total_pages(username)))
+        df = loop.run_until_complete(crawl_all(username,get_total_pages(username)))  # noqa: F405
 
 if df is not None:
     # Display your DataFrame in Streamlit

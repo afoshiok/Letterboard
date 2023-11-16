@@ -140,9 +140,9 @@ if __name__ == "__main__":
     # loop = asyncio.get_event_loop()
     # final_df = loop.run_until_complete(crawl('FavourOshio'))
     pl.Config.set_tbl_rows(25)
-    user = "FavourOshio"
+    user = "fumilayo"
     loop = asyncio.get_event_loop()
-    final_df = loop.run_until_complete(crawl_all(user))
+    final_df = loop.run_until_complete(crawl_all(user, get_total_pages(user)))
     print(final_df)
     print(len(final_df))
     # print(get_total_pages(user))
