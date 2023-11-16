@@ -1,3 +1,4 @@
+from datetime import datetime
 from bs4 import BeautifulSoup
 import requests
 import polars as pl
@@ -94,12 +95,17 @@ async def crawl(username, page, session): #Creates dataframe for data analysis
                         if crew_member['job'] == 'Writer' or 'Screenplay':
                             writers.append(crew_member['name'])
                             writer_gender.append(crew_member['gender'])
+                    release_date_str = film_tmdb_data.get("release_date", "")
+                    try:
+                        release_date = datetime.strptime(release_date_str, '%Y-%m-%d').date()
+                    except ValueError:
+                            release_date = None  
                     film_ob = {
                         "Name": film_tmdb_data.get("title", ""),
                         "Letterboxd Rating": film_rating / 2,
                         "TMDb ID": tmdb_id,
-                        "Log Date": f"{film_log_date[1]}-{film_log_date[2]}-{film_log_date[0]}",
-                        "Release Date": film_tmdb_data.get("release_date", ""),
+                        "Log Date": datetime.strptime(f"{film_log_date[1]}-{film_log_date[2]}-{film_log_date[0]}", '%m-%d-%Y').date(),
+                        "Release Date": release_date,
                         "Budget": film_tmdb_data.get("budget", 0),
                         "Production Countries":[country.get("iso_3166_1") for country in film_tmdb_data.get("production_countries", []) ],
                         "Genre(s)": [genre.get("name") for genre in film_tmdb_data.get("genres", [])],

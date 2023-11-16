@@ -24,11 +24,15 @@ def load_user_data(username):
 
 username = st.text_input('Username')
 submitted = st.button("Submit")
+df = None
+year_count = None
 
 if submitted:
+    tab1, tab2, tab3 = st.tabs(["Films Logged", "Dog", "Owl"])
     df = load_user_data(username)
 
 if df is not None:
     # Display your DataFrame in Streamlit
-    st.write(df)
+    with tab1:
+        st.write(df)
 
