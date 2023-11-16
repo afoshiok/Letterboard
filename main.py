@@ -34,5 +34,15 @@ if submitted:
 if df is not None:
     # Display your DataFrame in Streamlit
     with tab1:
-        st.write(df)
+        log_years = df.with_columns(pl.col("Log Date").dt.year().cast(pl.Utf8).to_physical().alias("Log Year"))
+        log_years_script = (
+            log_years.lazy()
+            .group_by("Log Year")
+            .agg(pl.count("Log Date").alias("Films Logged"))
+            .sort("Log Year")
+        )
+        log_years_count = log_years_script.collect()
+        log_years_graph = px.bar(log_years_count, x="Log Year", y="Films Logged", title="Films Logged by Year")
+        log_years_graph.update_xaxes(type='category')
+        st.plotly_chart(log_years_graph, use_container_width=True)
 
