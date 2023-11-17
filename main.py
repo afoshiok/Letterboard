@@ -35,15 +35,15 @@ if submitted:
 if df is not None:
     st.markdown(f"""### You've logged a total of {len(df)}* films on Letterboxd!""")
     with tab1:
-        log_years = df.with_columns(pl.col("Log Date").dt.year().cast(pl.Utf8).to_physical().alias("Log Year"))
+        log_years = df.with_columns(pl.col("Log Date").dt.year().cast(pl.Utf8).to_physical().alias("Log_Year"))
         log_years_script = (
             log_years.lazy()
-            .group_by("Log Year")
+            .group_by("Log_Year")
             .agg(pl.count("Log Date").alias("Films Logged"))
-            .sort("Log Year")
+            .sort("Log_Year")
         )
         log_years_count = log_years_script.collect()
-        log_years_graph = px.bar(log_years_count, x="Log Year", y="Films Logged", title="Films Logged by Year", )
+        log_years_graph = px.bar(log_years_count, x="Log_Year", y="Films Logged", title="Films Logged by Year")
         log_years_graph.update_xaxes(type='category')
         st.plotly_chart(log_years_graph, use_container_width=True)
     
@@ -59,6 +59,6 @@ if df is not None:
         re_count = release_years_script.collect()
         re_years_graph = px.bar(re_count, x="Release Year", y="count")
         re_years_graph.update_xaxes(type='category')
-        st.plotly_chart(re_years_graph , use_container_width=True)
+        st.plotly_chart(re_years_graph, use_container_width=True)
     
 

@@ -4,4 +4,4 @@ aiohttp
 requests 
 python-dotenv
 streamlit
-ploty == 5.18.0
+plotly==5.18.0
