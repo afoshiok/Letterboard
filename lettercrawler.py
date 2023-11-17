@@ -92,7 +92,7 @@ async def crawl(username, page, session): #Creates dataframe for data analysis
                             directors.append(crew_member['name'])
                             director_gender.append(crew_member['gender'])
                     for crew_member in crew_tmdb_data.get("crew", []):
-                        if crew_member['job'] == 'Writer' or 'Screenplay':
+                        if crew_member['job'] == 'Writer' or crew_member['job'] =='Screenplay':
                             writers.append(crew_member['name'])
                             writer_gender.append(crew_member['gender'])
                     release_date_str = film_tmdb_data.get("release_date", "")
