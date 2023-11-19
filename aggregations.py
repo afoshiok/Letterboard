@@ -39,7 +39,7 @@ director_gender_sum = director_gender.select(
     pl.col("Female Directors").sum(),
     pl.col("Non-Binary Directors").sum(),
     pl.col("Director's Gender Not Specified").sum()
-)
+).transpose(include_header=True,header_name="categories")
 
 writer_gender = df.select( 
                         pl.col("Writer Gender").list.count_matches(2).alias("Male Writers"),
@@ -52,7 +52,7 @@ writer_gender_sum = writer_gender.select(
     pl.col("Female Writers").sum(),
     pl.col("Non-Binary Writers").sum(),
     pl.col("Writer's Gender Not Specified").sum()
-)
+).transpose(include_header=True,header_name="categories")
 with pl.Config(set_tbl_width_chars=175):
-    print(director_gender_sum)
+    print(director_gender_sum.to_series(0))
     print(writer_gender_sum)
