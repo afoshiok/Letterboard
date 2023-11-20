@@ -30,6 +30,9 @@ df = None
 year_count = None
 release_count = None
 
+with st.sidebar:
+        st.write("Add pages here...")
+
 if submitted:
     tab1, tab2 = st.tabs(["Films Logged", "Film Release Year"])
     df = load_user_data(username)
@@ -107,6 +110,19 @@ if df is not None:
             writer_donut = go.Figure(data=[go.Pie(labels=writer_gender_sum.to_series(0), values=writer_gender_sum.to_series(1), hole=.4, marker=dict(colors=pie_color))])
             st.plotly_chart(writer_donut)
 
+    st.divider()
+
+    with st.container():
+        countries_df = df.select(pl.col("Production Countries").list.explode())
+        countries_df_count = countries_df.group_by("Production Countries").count()
+        countries_map = go.Figure(data=go.Choropleth(
+            locations=countries_df_count['Production Countries'],
+            z=countries_df_count["count"],
+            colorscale='Reds',
+            text=countries_df_count['Production Countries'],  # you might want to adjust this based on your data
+            colorbar_title="Count",
+            ))
+        st.plotly_chart(countries_map)
         
         
         

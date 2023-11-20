@@ -6,3 +6,4 @@ python-dotenv
 streamlit
 plotly==5.18.0
 streamlit-extras
+pycountry
