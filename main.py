@@ -5,6 +5,8 @@ import asyncio
 import plotly.express as px
 import plotly.graph_objects as go
 from streamlit_extras.add_vertical_space import add_vertical_space
+import os
+load_dotenv()
 
 st.set_page_config(page_title="LetterBoard", layout='wide')
 st.title("Letterboxd Data Analysis")
@@ -111,18 +113,27 @@ if df is not None:
             st.plotly_chart(writer_donut)
 
     st.divider()
+    import geojson
+    with open('custom.geo.json', encoding='utf-8') as file:
+        gj = geojson.load(file)
+        gjf = gj['features']
 
+    token = os.environ.get('mapbox_api')
     with st.container():
         countries_df = df.select(pl.col("Production Countries").list.explode())
         countries_df_count = countries_df.group_by("Production Countries").count()
-        countries_map = go.Figure(data=go.Choropleth(
-            locations=countries_df_count['Production Countries'],
-            z=countries_df_count["count"],
-            colorscale='Reds',
-            text=countries_df_count['Production Countries'],  # you might want to adjust this based on your data
-            colorbar_title="Count",
-            ))
-        st.plotly_chart(countries_map)
+        count_map = px.choropleth_mapbox(
+            data_frame=countries_df_count, 
+            geojson=gj, 
+            locations='Production Countries', 
+            range_color=(0,200),
+            color_continuous_scale="reds",
+            color='count',
+            featureidkey="properties.iso_a3",
+            zoom = .5
+            )
+        count_map.update_layout(mapbox_style="light", mapbox_accesstoken=token)
+        st.plotly_chart(count_map)
         
         
         
