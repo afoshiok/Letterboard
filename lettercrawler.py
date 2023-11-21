@@ -107,7 +107,10 @@ async def crawl(username, page, session): #Creates dataframe for data analysis
                         "Log Date": datetime.strptime(f"{film_log_date[1]}-{film_log_date[2]}-{film_log_date[0]}", '%m-%d-%Y').date(),
                         "Release Date": release_date,
                         "Budget": film_tmdb_data.get("budget", 0),
-                        "Production Countries":[pycountry.countries.get(alpha_2=country.get("iso_3166_1")).alpha_3 for country in film_tmdb_data.get("production_countries", []) ],
+                        "Production Countries":[pycountry.countries.get(alpha_2=country.get("iso_3166_1")).name
+                                                if pycountry.countries.get(alpha_2=country.get("iso_3166_1")) is not None
+                                                 else None
+                                                 for country in film_tmdb_data.get("production_countries", []) ],
                         "Genre(s)": [genre.get("name") for genre in film_tmdb_data.get("genres", [])],
                         "Runtime (Minutes)": film_tmdb_data.get("runtime", 0),
                         "Directors": directors,

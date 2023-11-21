@@ -63,84 +63,68 @@ if df is not None:
             release_years_script = (
             release_years.lazy()
                 .group_by("Release Year")
-                .agg(pl.count())
+                .agg(pl.count().alias("Films Logged"))
                 .drop_nulls()
                 .sort("Release Year")
             )
             re_count = release_years_script.collect()
-            re_years_graph = px.bar(re_count, x="Release Year", y="count", title="Films Logged by Release Year")
+            re_years_graph = px.bar(re_count, x="Release Year", y="Films Logged", title="Films Logged by Release Year")
             re_years_graph.update_xaxes(type='category')
             st.plotly_chart(re_years_graph, use_container_width=True)
 
     st.divider()
                 
+    col_01, col_center, col_02 = st.columns((0.5,8,0.5))
     
-    with st.container():
-        pie_color = ['#ff8000', '#00e054', '#ffffff', '#40bcf4' ]
-        st.header("Writer/Director Demographics")
-        column_1, column_2 = st.columns(2)
-        with column_1:
-            director_gender = df.select(
-                                pl.col("Director Gender").list.count_matches(2).alias("Male Directors"),
-                                pl.col("Director Gender").list.count_matches(1).alias("Female Directors"),
-                                pl.col("Director Gender").list.count_matches(3).alias("Non-Binary Directors"),
-                                pl.col("Director Gender").list.count_matches(0).alias("Not Specified")
-                                )
-            director_gender_sum = director_gender.select(
-                pl.col("Male Directors").sum(),
-                pl.col("Female Directors").sum(),
-                pl.col("Non-Binary Directors").sum(),
-                pl.col("Not Specified").sum()
-            ).transpose(include_header=True,header_name="categories")
-            st.subheader("Director Demographics")
-            director_donut = go.Figure(data=[go.Pie(labels=director_gender_sum.to_series(0), values=director_gender_sum.to_series(1), hole=.4, marker=dict(colors=pie_color))])
-            st.plotly_chart(director_donut)
-        with column_2:
-            writer_gender = df.select( 
-                                    pl.col("Writer Gender").list.count_matches(2).alias("Male Writers"),
-                                    pl.col("Writer Gender").list.count_matches(1).alias("Female Writers"),
-                                    pl.col("Writer Gender").list.count_matches(3).alias("Non-Binary Writers"),
-                                    pl.col("Writer Gender").list.count_matches(0).alias("Not Specified")
+    with col_center:
+        with st.container():
+            pie_color = ['#ff8000', '#00e054', '#ffffff', '#40bcf4' ]
+            
+            st.header("Writer/Director Demographics")
+            column_1, column_2 = st.columns(2)
+            with column_1:
+                director_gender = df.select(
+                                    pl.col("Director Gender").list.count_matches(2).alias("Male Directors"),
+                                    pl.col("Director Gender").list.count_matches(1).alias("Female Directors"),
+                                    pl.col("Director Gender").list.count_matches(3).alias("Non-Binary Directors"),
+                                    pl.col("Director Gender").list.count_matches(0).alias("Not Specified")
                                     )
-            writer_gender_sum = writer_gender.select(
-                pl.col("Male Writers").sum(),
-                pl.col("Female Writers").sum(),
-                pl.col("Non-Binary Writers").sum(),
-                pl.col("Not Specified").sum()
-            ).transpose(include_header=True,header_name="categories")
-            st.subheader("Writer Demographics")
-            writer_donut = go.Figure(data=[go.Pie(labels=writer_gender_sum.to_series(0), values=writer_gender_sum.to_series(1), hole=.4, marker=dict(colors=pie_color))])
-            st.plotly_chart(writer_donut)
+                director_gender_sum = director_gender.select(
+                    pl.col("Male Directors").sum(),
+                    pl.col("Female Directors").sum(),
+                    pl.col("Non-Binary Directors").sum(),
+                    pl.col("Not Specified").sum()
+                ).transpose(include_header=True,header_name="categories")
+                st.subheader("Director Demographics")
+                director_donut = go.Figure(data=[go.Pie(labels=director_gender_sum.to_series(0), values=director_gender_sum.to_series(1), hole=.4, marker=dict(colors=pie_color))])
+                st.plotly_chart(director_donut)
+            with column_2:
+                writer_gender = df.select( 
+                                        pl.col("Writer Gender").list.count_matches(2).alias("Male Writers"),
+                                        pl.col("Writer Gender").list.count_matches(1).alias("Female Writers"),
+                                        pl.col("Writer Gender").list.count_matches(3).alias("Non-Binary Writers"),
+                                        pl.col("Writer Gender").list.count_matches(0).alias("Not Specified")
+                                        )
+                writer_gender_sum = writer_gender.select(
+                    pl.col("Male Writers").sum(),
+                    pl.col("Female Writers").sum(),
+                    pl.col("Non-Binary Writers").sum(),
+                    pl.col("Not Specified").sum()
+                ).transpose(include_header=True,header_name="categories")
+                st.subheader("Writer Demographics")
+                writer_donut = go.Figure(data=[go.Pie(labels=writer_gender_sum.to_series(0), values=writer_gender_sum.to_series(1), hole=.4, marker=dict(colors=pie_color))])
+                st.plotly_chart(writer_donut)
 
     st.divider()
-    import geojson
-    with open('custom.geo.json', encoding='utf-8') as file:
-        gj = geojson.load(file)
-        gjf = gj['features']
-
-    token = os.environ.get('mapbox_api')
     with st.container():
         countries_df = df.select(pl.col("Production Countries").list.explode())
         countries_df_count = countries_df.group_by("Production Countries").count()
-        count_map = px.choropleth_mapbox(
-            data_frame=countries_df_count, 
-            geojson=gj, 
-            locations='Production Countries', 
-            range_color=(0,200),
-            color_continuous_scale="reds",
-            color='count',
-            featureidkey="properties.iso_a3",
-            zoom = .5
+        parents = ['']*len(countries_df_count['Production Countries'])
+        count_map = go.Figure(go.Treemap(
+            labels=countries_df_count["Production Countries"], 
+            values=countries_df_count["count"],
+            parents=parents,
+            textinfo="label+value"
             )
-        count_map.update_layout(mapbox_style="light", mapbox_accesstoken=token)
-        st.plotly_chart(count_map)
-        
-        
-        
-        
-            
-        
-            
-
-    
-
+            )
+        st.plotly_chart(count_map, use_container_width=True)
