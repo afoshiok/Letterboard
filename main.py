@@ -45,7 +45,6 @@ if df is not None:
 
     with st.container():
         with tab1:
-            st.text("Trying to figure out why this isn't working.")
             log_years = df.with_columns(pl.col("Log Date").dt.year().cast(pl.Utf8).to_physical().alias("Log Year"))
             log_years_script = (
                 log_years.lazy()
@@ -56,6 +55,8 @@ if df is not None:
             log_years_count = log_years_script.collect()
             log_years_graph = px.bar(log_years_count, x="Log Year", y="Films Logged", title="Films Logged by Year")
             log_years_graph.update_xaxes(type='category')
+            max_log_year = log_years_count.max().to_dicts()
+            st.markdown(f"""You logged a total of **{len(df)}** films in your diary, with {max_log_year[0]["Log Year"]} having the most logged films!""")
             st.plotly_chart(log_years_graph, use_container_width=True)
         
         with tab2:
@@ -127,4 +128,5 @@ if df is not None:
             textinfo="label+value"
             )
             )
+        count_map.update_traces(marker=dict(cornerradius=5))
         st.plotly_chart(count_map, use_container_width=True)

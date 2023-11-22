@@ -5,15 +5,18 @@ import pycountry
 user = "kcabs"
 loop = asyncio.get_event_loop()
 df = loop.run_until_complete(crawl_all(user, get_total_pages(user)))
-# log_years = final_df.with_columns(pl.col("Log Date").dt.year().alias("log_year"))
-# log_years_script = (
-#     log_years.lazy()
-#     .group_by("log_year")
-#     .agg(pl.count("Log Date"))
-#     .sort("log_year")
-#     )
-# log_years_count = log_years_script.collect()
-# print(log_years_count)
+log_years = df.with_columns(pl.col("Log Date").dt.year().alias("log_year"))
+log_years_script = (
+    log_years.lazy()
+    .group_by("log_year")
+    .agg(pl.count("Log Date"))
+    .sort("log_year")
+    )
+log_years_count = log_years_script.collect()
+print(log_years_count)
+
+
+print(log_years_count.max().to_dicts())
 
 print(df.schema)
 
@@ -57,13 +60,9 @@ print(df.schema)
 # with pl.Config(set_tbl_width_chars=175):
 #     print(director_gender_sum.to_series(0))
 #     print(writer_gender_sum)
-def get_country_name(alpha_2):
-    try:
-        return pycountry.countries.get(alpha_2=alpha_2)
-    except AttributeError:
-        return None
-    
-countries_df = df.select(pl.col("Production Countries").list.explode())
-countries_df_count = countries_df.group_by("Production Countries").count()
 
-print(countries_df_count)
+    
+# countries_df = df.select(pl.col("Production Countries").list.explode())
+# countries_df_count = countries_df.group_by("Production Countries").count()
+
+# print(countries_df_count)
