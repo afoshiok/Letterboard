@@ -20,16 +20,16 @@ print(log_years_count.max().to_dicts())
 
 print(df.schema)
 
-# release_years = df.with_columns(pl.col("Release Date").dt.year().alias("Release Year"))
-# release_years_script = (
-#     release_years.lazy()
-#     .group_by("Release Year")
-#     .agg(pl.count())
-#     .drop_nulls()
-#     .sort("Release Year")
-# )
-# re_count = release_years_script.collect()
-# print(re_count)
+release_years = df.with_columns(pl.col("Release Date").dt.year().alias("Release Year"))
+release_years_script = (
+    release_years.lazy()
+    .group_by("Release Year")
+    .agg(pl.count())
+    .drop_nulls()
+    .sort("Release Year")
+)
+re_count = release_years_script.collect()
+print(re_count)
 # print(release_years.select(['Name', 'Release Year']))
 
 # director_gender = df.select(

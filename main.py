@@ -56,8 +56,9 @@ if df is not None:
             log_years_graph = px.bar(log_years_count, x="Log Year", y="Films Logged", title="Films Logged by Year")
             log_years_graph.update_xaxes(type='category')
             max_log_year = log_years_count.max().to_dicts()
-            st.markdown(f"""You logged a total of **{len(df)}** films in your diary, with {max_log_year[0]["Log Year"]} having the most logged films!""")
+            st.markdown(f"""You logged a total of **{len(df)}*** films in your diary, with {max_log_year[0]["Log Year"]} having the most logged films!""")
             st.plotly_chart(log_years_graph, use_container_width=True)
+            st.markdown("\*  = Only films logged with a date will be counted towards your diary.")
         
         with tab2:
             release_years = df.with_columns(pl.col("Release Date").dt.year().cast(pl.Utf8).to_physical().alias("Release Year"))
@@ -71,7 +72,10 @@ if df is not None:
             re_count = release_years_script.collect()
             re_years_graph = px.bar(re_count, x="Release Year", y="Films Logged", title="Films Logged by Release Year")
             re_years_graph.update_xaxes(type='category')
+            max_release_year = re_count.max().to_dicts() #FIXME: This produces the wrong output, the .max() only returns the max of EACH column. Find a way to find the max count and find its corresponding year.
+            st.markdown(f"""You logged a total of **{len(df)}*** films in your diary, with {max_release_year[0]["Release Year"]} having the most logged films!""")
             st.plotly_chart(re_years_graph, use_container_width=True)
+            st.markdown("\*  = Only films logged with a date will be counted towards your diary.")
 
     st.divider()
                 
@@ -120,13 +124,15 @@ if df is not None:
     with st.container():
         countries_df = df.select(pl.col("Production Countries").list.explode())
         countries_df_count = countries_df.group_by("Production Countries").count()
-        parents = ['']*len(countries_df_count['Production Countries'])
+        parents = ['Countries Logged']*len(countries_df_count['Production Countries'])
         count_map = go.Figure(go.Treemap(
             labels=countries_df_count["Production Countries"], 
             values=countries_df_count["count"],
             parents=parents,
-            textinfo="label+value"
+            textinfo="label+value+percent root",
+            marker_colorscale = ['#ebf8fd', '#40bcf4' ]
             )
             )
         count_map.update_traces(marker=dict(cornerradius=5))
+        count_map.update_layout(width=600,height=600)
         st.plotly_chart(count_map, use_container_width=True)
