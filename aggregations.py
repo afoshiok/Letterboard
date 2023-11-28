@@ -18,7 +18,7 @@ df = loop.run_until_complete(crawl_all(user, get_total_pages(user)))
 # print(max_log_years_df)
 
 
-# print(df.schema)
+print(df.schema)
 
 # release_years = df.with_columns(pl.col("Release Date").dt.year().alias("Release Year"))
 # release_years_script = (
@@ -85,7 +85,7 @@ df = loop.run_until_complete(crawl_all(user, get_total_pages(user)))
 # shortest_film = shortest_film_df.select(pl.col("Name"), pl.col("Runtime (Minutes)"))
 # print(shortest_film_df)
 
-director_explode = df.select(pl.col("Directors").list.explode())
-director_df = director_explode.group_by("Directors").count()
-top_directors = director_df.top_k(5, by="count")
-print(top_directors)
+# director_explode = df.select(pl.col("Directors").list.explode())
+# director_df = director_explode.group_by("Directors").count()
+# top_directors = director_df.top_k(5, by="count")
+# print(top_directors)

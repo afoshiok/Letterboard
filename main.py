@@ -9,8 +9,8 @@ from datetime import datetime
 st.set_page_config(page_title="LetterBoard", layout='wide')
 st.title("Letterboxd Data Analysis")
 st.markdown("""Letterboxd is a social media platform for film lovers to rate, discuss, and discover movies.
-            This app scrapes data from your Letterboxd diary, and maps movie data to corresponding data in the TMDb API.
-            To see how this app works, as well as what tool I used to build it, visit the "Under the Hood" page.
+            This app scrapes data from your Letterboxd diary, and maps movie data to corresponding data in the TMDb API (This might take a bit.).
+            _No affiliation with Letterboxd itself._
             """)
 st.markdown("Made by [Favour O.](https://www.linkedin.com/in/favour-oshio/), inspired by [Tyler Richards' Goodreads App](https://goodreads.streamlit.app/).")
 
@@ -27,6 +27,7 @@ def load_user_data(username):
         return None
 
 username = st.text_input('Username')
+st.markdown("""_If you don't have a Letterboxd try some of my favorite accounts: :green[fumilayo] (Ayo Edebiri), :green[jaredgilman] (Jared Gilman), :green[girlactress] (Rachel Sennott)_ """)
 submitted = st.button("Submit")
 df = None
 year_count = None
@@ -83,11 +84,11 @@ if df is not None:
         with tab3:
             def categorize_runtime(runtime):
                 if runtime <= 60:
-                    return 'Short'
+                    return 'Short (Under 60mins)'
                 elif 60 <= runtime <= 90:
-                    return 'Medium'
+                    return 'Medium (60 - 90mins)'
                 elif 90 < runtime:
-                    return 'Long'
+                    return 'Long (90mins <)'
             film_runtimes = df.with_columns(pl.col("Runtime (Minutes)").map_elements(categorize_runtime, pl.Utf8).alias("Runtime Category"))
             runtime_category_counts = film_runtimes.group_by('Runtime Category').agg(pl.col('Runtime Category').count().alias('Films Logged')).sort("Runtime Category", descending=True)
             runtime_graph = px.bar(runtime_category_counts, x="Runtime Category", y="Films Logged", title="Films Logged by Runtime")
@@ -171,6 +172,30 @@ if df is not None:
             )
             )
         count_map.update_traces(marker=dict(cornerradius=5))
-        count_map.update_layout(margin = dict(t=50, l=5, r=5, b=5))
+        count_map.update_layout(margin = dict(t=50, l=0, r=0, b=0))
+        top_country_filter = countries_df_count.top_k(1, by="count")
+        top_country = top_country_filter.to_dicts()
+        countries_check = ["United States", "United Arab Emirates", "United Kingdom", "Netherlands"]
+        count_string_fmt = '' if top_country[0]["Production Countries"] not in countries_check else 'the'
         st.plotly_chart(count_map, use_container_width=True)
-        st.markdown(f"""You logged films produced across :green[**{len(countries_df_count)}**] countries!""")
+        st.markdown(f"""You logged films produced across :green[**{len(countries_df_count)}**] countries! A majority of films you logged were produced in {count_string_fmt} :green[**{top_country[0]["Production Countries"]}**].
+                    _Keep in mind: Films can be produced in more than on country._""")
+
+    with st.container():
+        genres_df = df.select(pl.col("Genre(s)").list.explode())
+        genres_df_count = genres_df.group_by("Genre(s)").count()
+        genres_parent = ['Genres']*len(genres_df_count['Genre(s)'])
+        genres_map = go.Figure(go.Treemap(
+            labels=genres_df_count["Genre(s)"], 
+            values=genres_df_count["count"],
+            parents=genres_parent,
+            textinfo="label+value+percent root",
+            marker_colorscale = ['#ebf8fd', '#40bcf4' ]
+            )
+            )
+        genres_map.update_traces(marker=dict(cornerradius=5))
+        genres_map.update_layout(margin = dict(t=50, l=0, r=0, b=0))
+        top_genre_filter = genres_df_count.top_k(1, by="count")
+        top_genre = top_genre_filter.to_dicts()
+        st.plotly_chart(genres_map, use_container_width=True)
+        st.markdown(f"""You logged films from :green[**{len(genres_df_count)}**] different genres, with your top genre being :green[**{top_genre[0]["Genre(s)"]}**]! """)
