@@ -12,7 +12,7 @@ st.markdown("""Letterboxd is a social media platform for film lovers to rate, di
             This app scrapes data from your Letterboxd diary, and maps movie data to corresponding data in the TMDb API.
             To see how this app works, as well as what tool I used to build it, visit the "Under the Hood" page.
             """)
-st.markdown("Made by [Favour O.](https://www.linkedin.com/in/favour-oshio/)")
+st.markdown("Made by [Favour O.](https://www.linkedin.com/in/favour-oshio/), inspired by [Tyler Richards' Goodreads App](https://goodreads.streamlit.app/).")
 
 
 @st.cache_data()
@@ -156,7 +156,9 @@ if df is not None:
                 st.plotly_chart(writer_donut)
 
     st.divider()
+    
     with st.container():
+        st.subheader("Countries + Genres Distribution")
         countries_df = df.select(pl.col("Production Countries").list.explode())
         countries_df_count = countries_df.group_by("Production Countries").count()
         parents = ['Countries Logged']*len(countries_df_count['Production Countries'])
@@ -169,5 +171,6 @@ if df is not None:
             )
             )
         count_map.update_traces(marker=dict(cornerradius=5))
-        count_map.update_layout(width=1200,height=800)
-        st.plotly_chart(count_map)
+        count_map.update_layout(margin = dict(t=50, l=5, r=5, b=5))
+        st.plotly_chart(count_map, use_container_width=True)
+        st.markdown(f"""You logged films produced across :green[**{len(countries_df_count)}**] countries!""")
