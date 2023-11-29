@@ -8,6 +8,7 @@ import time
 import asyncio
 import aiohttp
 import pycountry
+import streamlit as st
 load_dotenv()
 
 
@@ -22,7 +23,7 @@ async def fetch_film_details(session, id):
     film_req_link = f"https://api.themoviedb.org/3/movie/{id}"
     head = {
         "accept": "application/json",
-        "Authorization": f"Bearer {os.environ.get('api')}" 
+        "Authorization": f"Bearer {st.secrets['api']}" 
         }
     crew_request_link = f"https://api.themoviedb.org/3/movie/{id}/credits"
     async with session.get(film_req_link, headers=head) as response:
