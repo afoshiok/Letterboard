@@ -10,6 +10,10 @@ import asyncio
 import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 async def fetch_tmdb_id(session, slug):
     async with session.get(f"https://letterboxd.com/film/{slug}/details") as response:
@@ -22,7 +26,7 @@ async def fetch_film_details(session, id):
     film_req_link = f"https://api.themoviedb.org/3/movie/{id}"
     head = {
         "accept": "application/json",
-        "Authorization": f"Bearer {st.secrets['API']}" 
+        "Authorization": f"Bearer {os.environ.get('api')}" 
         }
     crew_request_link = f"https://api.themoviedb.org/3/movie/{id}/credits"
     async with session.get(film_req_link, headers=head) as response:
