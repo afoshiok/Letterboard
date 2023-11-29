@@ -19,6 +19,7 @@ st.markdown("Made by [Favour O.](https://www.linkedin.com/in/favour-oshio/), ins
 def load_user_data(username):
     try:
         pages = get_total_pages(username)
+        print(f"{username} has {pages}")
         loop = asyncio.new_event_loop()
         df = loop.run_until_complete(crawl_all(username, pages))  # noqa: F405
         return df
