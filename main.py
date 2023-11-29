@@ -9,7 +9,7 @@ from datetime import datetime
 st.set_page_config(page_title="LetterBoard", layout='wide')
 st.title("Letterboxd Data Analysis")
 st.markdown("""Letterboxd is a social media platform for film lovers to rate, discuss, and discover movies.
-            This app scrapes data from your Letterboxd diary, and maps movie data to corresponding data in the TMDb API (This might take a bit.).
+            This app scrapes data from your Letterboxd diary, and maps movie data to corresponding data in the TMDb API (The more movies you have logged, the longer this will take).
             _No affiliation with Letterboxd itself._
             """)
 st.markdown("Made by [Favour O.](https://www.linkedin.com/in/favour-oshio/), inspired by [Tyler Richards' Goodreads App](https://goodreads.streamlit.app/).")
