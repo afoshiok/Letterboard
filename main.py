@@ -35,7 +35,8 @@ release_count = None
 
 if submitted:
     tab1, tab2, tab3 = st.tabs(["Films Logged", "Film Release Year", "Film Runtimes"])
-    df = load_user_data(username).drop_nulls()
+    nonulls_df = load_user_data(username).drop_nulls()
+    df = nonulls_df
 
 if df is not None:
 
