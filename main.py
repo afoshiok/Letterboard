@@ -37,6 +37,7 @@ if submitted:
     tab1, tab2, tab3 = st.tabs(["Films Logged", "Film Release Year", "Film Runtimes"])
     nonulls_df = load_user_data(username).drop_nulls()
     df = nonulls_df
+    print(df)
 
 if df is not None:
 
