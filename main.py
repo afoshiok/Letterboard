@@ -143,7 +143,14 @@ async def crawl_all(username, pages):
 
     return final_df
 st.set_page_config(page_title="LetterBoard", layout='wide')
-st.title("Letterboxd Data Analysis")
+col_top1, col_top2 = st.columns((8,.45))
+with col_top1:
+    st.title("Letterboxd Data Analysis")
+with col_top2:
+    if st.button("Clear cache"):
+        # Clear values from *all* all in-memory and on-disk data caches:
+        # i.e. clear values from both square and cube
+        st.cache_data.clear()
 st.markdown("""Letterboxd is a social media platform for film lovers to rate, discuss, and discover movies.
             This app scrapes data from your Letterboxd diary, and maps movie data to corresponding data in the TMDb API (The more movies you have logged, the longer this will take).
             _No affiliation with Letterboxd itself._
