@@ -146,6 +146,8 @@ async def crawl_all(username, pages):
         final_df = pl.concat(result)
 
     return final_df
+
+#Streamlit Visualizations
 st.set_page_config(page_title="LetterBoard", layout='wide')
 col_top1, col_top2 = st.columns((8,.45))
 with col_top1:
@@ -174,7 +176,7 @@ def load_user_data(username):
         st.error(f"Error loading user data: {str(e)}")
         return None
 col_top1, col_top2 = st.columns((8,2))
-username = st.text_input('Username')
+username = st.text_input('Username', placeholder="Tip: To avoid errors don't copy + paste the examples.")
 st.markdown("""_If you don't have a Letterboxd try some of my favorite accounts: :green[fumilayo] (Ayo Edebiri), :green[jaredgilman] (Jared Gilman), :green[girlactress] (Rachel Sennott)_ """)
 submitted = st.button("Submit")
 df = None
