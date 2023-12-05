@@ -61,3 +61,6 @@ A majority of dataframe cretation is done in the **crawl()** function. This func
 }
 ```
 The only items scraped from the diary page are the "Name", "Letterboxd Rating" and "Log Date", the rest are from the TMDb API. The way this works, is while BS4 scrapes each films data from the table rows, it also gets the films "slug". Which will then be used to send a request to the film's Letteboxd page with the **fetch_tmdb_id()** function, to get the film's TMDb ID. That ID is then passed to **fetch_film_details()** function, which sends requests to two TMDb API endpoints and returns both the film and credits data. Each dictionary is then appended to a list which is then converted into a Polars Dataframe.
+
+# Polars Dataframe to Streamlit Visulaizations (Load)
+Coming soon...
