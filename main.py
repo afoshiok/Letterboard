@@ -170,7 +170,7 @@ def load_user_data(username):
         st.error(f"Error loading user data: {str(e)}")
         return None
 
-username = st.text_input('Username')
+username = st.text_input('Username', placeholder="Tip: To avoid errors, don't copy + paste the examples.")
 st.markdown("""_If you don't have a Letterboxd try some of my favorite accounts: :green[fumilayo] (Ayo Edebiri), :green[jaredgilman] (Jared Gilman), :green[girlactress] (Rachel Sennott)_ """)
 submitted = st.button("Submit")
 df = None
