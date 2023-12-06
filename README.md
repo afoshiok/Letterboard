@@ -42,6 +42,8 @@ async def crawl_all(username, pages):
 ```
 
 # Letterboxd Diary to Polars Dataframe (Transform)
+Polars is a dataframe library writen in Rust, with one of its main selling points being effective paralellism. I chose to use Polars over Pandas for this project because it is 50x faster (Their claim), and I want to take advantage of their Lazyframe feature. 
+
 A majority of dataframe cretation is done in the **crawl()** function. This function creates a [Client Session](https://docs.aiohttp.org/en/stable/client_reference.html) with aiohttp of a diary page, and uses [Beautiful Soup](https://pypi.org/project/beautifulsoup4/) to scrape the data from each row of logged film data and places them into a dictionary with this schema:
 ```py
 {
@@ -62,5 +64,39 @@ A majority of dataframe cretation is done in the **crawl()** function. This func
 ```
 The only items scraped from the diary page are the "Name", "Letterboxd Rating" and "Log Date", the rest are from the TMDb API. The way this works, is while BS4 scrapes each films data from the table rows, it also gets the films "slug". Which will then be used to send a request to the film's Letteboxd page with the **fetch_tmdb_id()** function, to get the film's TMDb ID. That ID is then passed to **fetch_film_details()** function, which sends requests to two TMDb API endpoints and returns both the film and credits data. Each dictionary is then appended to a list which is then converted into a Polars Dataframe.
 
-# Polars Dataframe to Streamlit Visulaizations (Load)
-Coming soon...
+# Streamlit Aggregations + Visulaizations (Load)
+All aggregations queries can be found [here](https://github.com/afoshiok/Letterboxd-EDA/blob/main/aggregations.py), so I'm just going to walk through a couple. With the aggregation used to create the pie chart for the directors' and writers' genders, I needed to count the instances of 0s, 1s, 2s, and 3s in the lists, as well as give them their proper label. Here's how I achieved that:
+```py
+director_gender = df.select(
+                            pl.col("Director Gender").list.count_matches(2).alias("Male Directors"),
+                            pl.col("Director Gender").list.count_matches(1).alias("Female Directors"),
+                            pl.col("Director Gender").list.count_matches(3).alias("Non-Binary Directors"),
+                            pl.col("Director Gender").list.count_matches(0).alias("Director's Gender Not Specified")
+                            )
+```
+This counted the genders of the directors for each film resulting in a dataframe that looked something like this:
+
+| Male Directors | Female Directors | Non-Binary Directors | Director's Gender Not Specified |
+|----------------|------------------|----------------------|---------------------------------|
+| 1              | 0                | 0                    | 0                               |
+| 2              | 0                | 0                    | 0                               |
+| 0              | 1                | 0                    | 0                               |
+| 1              | 0                | 0                    | 0                               |
+
+All I have to do now is just sum the values of each column and transpose the dataframe for it to be readable by Plotly:
+```py
+director_gender_sum = director_gender.select(
+    pl.col("Male Directors").sum(),
+    pl.col("Female Directors").sum(),
+    pl.col("Non-Binary Directors").sum(),
+    pl.col("Director's Gender Not Specified").sum()
+).transpose(include_header=True,header_name="categories")
+```
+Finally, this results in a dataframe that looks like this:
+
+| categories                      | count |
+|---------------------------------|-------|
+| Male Directors                  | 4     |
+| Female Directors                | 1     |
+| Non-Binary Directors            | 0     |
+| Director's Gender Not Specified | 0     |
