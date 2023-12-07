@@ -5,9 +5,14 @@ Letterboxd is a social media platform where movie lovers can share, review, and 
 
 Usually, when I make a web app like this, I use the FAV (FastApi and Vue) stack, that's where [Streamlit](https://streamlit.io/) comes in. Streamlit enabled me to create the entire app completely in Python, and not worry about converting my dataframes into JSON responses.
 
-Try the web app for yourself with either one of these links:
+**Try the web app for yourself with either one of these links:**
 - https://letterboard.streamlit.app/
-- https://letterboard.up.railway.app/ (I had Railway credits left over from my Senior year project, so why not.)
+- https://letterboard.up.railway.app/ (I had Railway credits left over from my Senior year project, so why not.)]
+
+**If you run into an error:**
+- Check if the desired username is spelled correctly.
+- Don't copy and paste the username into the input bar, for some reason it formats the username incorrectly when sent to the backend.
+- If the previous are correct, and you are still running into a problem, try clearing the cache by hitting "Clear Cache" on the top right corner of the app. Every time a username is submitted, the dataframe is cache in the memory of the production environment and it may be full.
 
 ![Letterboard](https://github.com/afoshiok/Letterboxd-EDA/assets/89757138/9d5f181c-d386-4054-9c0a-a7a802225012)
 
