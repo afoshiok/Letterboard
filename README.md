@@ -8,6 +8,9 @@ Usually, when I make a web app like this, I use the FAV (FastApi and Vue) stack,
 **Try the web app for yourself with either one of these links:**
 - https://letterboard.streamlit.app/
 - https://letterboard.up.railway.app/ (I had Railway credits left over from my Senior year project, so why not.)]
+  
+  ![Letterboard_Demo](https://github.com/afoshiok/Letterboxd-EDA/assets/89757138/20df231b-97dc-4fe9-a4de-e6a7430cd9cf)
+
 
 **If you run into an error:**
 - Check if the desired username is spelled correctly.
