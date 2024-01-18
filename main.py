@@ -164,7 +164,7 @@ st.markdown("""Letterboxd is a social media platform for film lovers to rate, di
 st.markdown("Made by [Favour O.](https://www.linkedin.com/in/favour-oshio/), inspired by [Tyler Richards' Goodreads App](https://goodreads.streamlit.app/).")
 
 
-@st.cache_data()
+@st.cache_resource(show_spinner="Scraping data from Letterboxd(might take a bit)...")
 def load_user_data(username):
     try:
         pages = get_total_pages(username)
